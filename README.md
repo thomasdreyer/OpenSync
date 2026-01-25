@@ -77,3 +77,17 @@ OpenSync solves this by providing:
 git clone https://github.com/your-org/opensync
 cd opensync
 docker-compose up
+```
+
+```bash
+import { OpenSyncClient } from '@opensync/sdk';
+
+const client = new OpenSyncClient({
+  url: 'http://localhost:8080',
+  apiKey: 'dev-key'
+});
+
+await client.auth.signIn('user@email.com', 'password');
+const todos = await client.collection('todos').sync();
+
+```

@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: opensync
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  api:
+    build: ../../apps/api
+    command: npm run start:dev
+    volumes:
+      - ../../apps/api:/app
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      JWT_SECRET: dev-secret
+
+volumes:
+  db-data:
