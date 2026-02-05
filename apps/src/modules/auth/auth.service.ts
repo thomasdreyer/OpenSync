@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +13,11 @@ export class AuthService {
   ) {}
 
   async register(email: string, password: string) {
+    const existing = await this.users.findOne({ where: { email } });
+    if (existing) {
+      throw new BadRequestException('Email is already registered');
+    }
+
     const hash = await bcrypt.hash(password, 10);
     const user = this.users.create({ email, passwordHash: hash });
     await this.users.save(user);
@@ -22,7 +27,7 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.users.findOne({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
     return this.sign(user);
   }

@@ -1,22 +1,32 @@
 # Contributing to OpenSync
 
-Thanks for your interest in contributing!
+Thanks for contributing.
 
 ## Setup
 
 ```bash
 git clone https://github.com/your-org/opensync
 cd opensync
-pnpm install
-pnpm dev
+npm install
 ```
 
+## Development
 
----
+```bash
+npm run dev
+```
 
-# ✅ 5. FUNDING.yml (GitHub Sponsors)
+## Checks before PR
 
-`.github/FUNDING.yml`
+```bash
+npm run build
+npm run test
+npm --workspace @opensync/sdk-react-native pack
+```
 
-```yaml
-github: thomasdreyer
+## Release flow
+
+1. Add a changeset (`npm run changeset`)
+2. Open PR with the changes
+3. Merge to main
+4. Run release workflow for npm/NuGet artifacts

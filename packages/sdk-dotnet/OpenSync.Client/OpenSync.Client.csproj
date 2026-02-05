@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net8.0-android;net8.0-ios</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PackageId>OpenSync.Client</PackageId>
+    <Title>OpenSync .NET Client SDK</Title>
+    <Description>OpenSync SDK for .NET mobile and backend consumers.</Description>
+    <Version>0.1.0-alpha.0</Version>
+    <Authors>OpenSync</Authors>
+    <PackageTags>opensync;sync;offline-first;maui;xamarin</PackageTags>
+    <RepositoryUrl>https://github.com/your-org/opensync</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

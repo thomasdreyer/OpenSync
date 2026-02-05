@@ -1,10 +1,8 @@
-import axios, { AxiosInstance } from 'axios';
-
 export type OpenSyncClientConfig = {
   baseUrl: string;
   endpoints?: Partial<OpenSyncEndpoints>;
   getUserId?: () => string;
-  axiosInstance?: AxiosInstance;
+  fetchImpl?: typeof fetch;
 };
 
 export type OpenSyncEndpoints = {
@@ -35,7 +33,7 @@ export class OpenSyncClient {
   private readonly baseUrl: string;
   private readonly endpoints: OpenSyncEndpoints;
   private readonly getUserId: () => string;
-  private readonly http: AxiosInstance;
+  private readonly fetchImpl: typeof fetch;
 
   constructor(baseUrlOrConfig: string | OpenSyncClientConfig) {
     const config =
@@ -46,45 +44,72 @@ export class OpenSyncClient {
     this.baseUrl = config.baseUrl;
     this.endpoints = { ...DEFAULT_ENDPOINTS, ...(config.endpoints ?? {}) };
     this.getUserId = config.getUserId ?? (() => 'me');
-    this.http = config.axiosInstance ?? axios;
+    this.fetchImpl = config.fetchImpl ?? fetch;
   }
 
   setToken(token: string) {
     this.token = token;
   }
 
+  private async request<T>(url: string, init?: RequestInit): Promise<T> {
+    const response = await this.fetchImpl(url, init);
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`OpenSync request failed (${response.status}): ${body}`);
+    }
+
+    return response.json() as Promise<T>;
+  }
+
   async register(email: string, password: string) {
-    const res = await this.http.post(resolveUrl(this.baseUrl, this.endpoints.register), {
-      email,
-      password
-    });
-    this.token = res.data.token;
-    return res.data;
+    const data = await this.request<{ token: string }>(
+      resolveUrl(this.baseUrl, this.endpoints.register),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      }
+    );
+
+    this.token = data.token;
+    return data;
   }
 
   async login(email: string, password: string) {
-    const res = await this.http.post(resolveUrl(this.baseUrl, this.endpoints.login), {
-      email,
-      password
-    });
-    this.token = res.data.token;
-    return res.data;
+    const data = await this.request<{ token: string }>(
+      resolveUrl(this.baseUrl, this.endpoints.login),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      }
+    );
+
+    this.token = data.token;
+    return data;
   }
 
-  async push(changes: any[]) {
-    const res = await this.http.post(
-      resolveUrl(this.baseUrl, this.endpoints.push),
-      { userId: this.getUserId(), changes },
-      { headers: { Authorization: `Bearer ${this.token}` } }
-    );
-    return res.data;
+  async push(changes: unknown[]) {
+    return this.request(resolveUrl(this.baseUrl, this.endpoints.push), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`
+      },
+      body: JSON.stringify({ userId: this.getUserId(), changes })
+    });
   }
 
   async pull(since: number) {
-    const res = await this.http.get(resolveUrl(this.baseUrl, this.endpoints.pull), {
-      params: { userId: this.getUserId(), since },
-      headers: { Authorization: `Bearer ${this.token}` }
+    const url = new URL(resolveUrl(this.baseUrl, this.endpoints.pull));
+    url.searchParams.set('since', String(since));
+    url.searchParams.set('userId', this.getUserId());
+
+    return this.request(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      }
     });
-    return res.data;
   }
 }

@@ -3,7 +3,12 @@ name: API CI
 on:
   push:
     paths:
-      - 'apps/api/**'
+      - 'apps/**'
+      - '.github/workflows/api.yml'
+  pull_request:
+    paths:
+      - 'apps/**'
+      - '.github/workflows/api.yml'
 
 jobs:
   build:
@@ -13,4 +18,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: cd apps/api && npm install && npm run build
+      - run: npm ci
+      - run: npm run build

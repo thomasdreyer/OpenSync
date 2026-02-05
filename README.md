@@ -1,117 +1,79 @@
 # OpenSync 🚀
-### Open-source mobile backend with offline-first sync
 
-OpenSync is an open-source backend platform designed for modern mobile applications that need **offline-first data sync**, **realtime updates**, **auth**, and **storage** — without vendor lock-in.
+OpenSync is an open-source, offline-first backend stack for mobile apps. It includes:
 
-Think: Firebase / Supabase — but **offline-first**, **self-hostable**, and **built for production mobile systems**.
+- A NestJS API for auth + sync
+- A React Native SDK package for clients
+- Docker-based local development
+- CI/release scaffolding for npm and NuGet distribution
 
----
+## Current package targets
 
-## ✨ Why OpenSync
+- **npm**: `@opensync/sdk-react-native` (React Native)
+- **NuGet (planned/seeded)**: `OpenSync.Client` for .NET MAUI / Xamarin migration scenarios
+- **Native SDKs (roadmap)**: Android (Kotlin) and iOS (Swift)
 
-Mobile apps fail when:
-- Networks are unreliable
-- Backend sync is fragile
-- Data conflicts break user trust
-- Infrastructure costs spiral
+## Quick start (local development)
 
-OpenSync solves this by providing:
-✅ Offline-first sync engine  
-✅ Conflict resolution strategies  
-✅ Auth & role-based access control  
-✅ Realtime subscriptions  
-✅ File storage  
-✅ Self-hosted infrastructure  
-✅ Mobile SDKs  
+```bash
+git clone https://github.com/your-org/opensync
+cd opensync
+npm install
+docker compose -f infra/docker/docker-compose.yml up -d db
+npm run dev
+```
 
----
+API is served from `http://localhost:8080/api`.
 
-## 🧠 Core Features
+## Install the React Native SDK
 
-### 🔐 Authentication
-- Email/password, OAuth2, JWT
-- Role-based permissions
-- Multi-tenant ready
-
-### 🔄 Offline-First Sync Engine
-- Local-first SQLite storage
-- Automatic background sync
-- Conflict detection & resolution
-- Delta-based updates
-
-### ⚡ Realtime
-- WebSocket subscriptions
-- Event streams
-- Push-friendly architecture
-
-### 📦 Storage
-- Secure file uploads/downloads
-- Signed URLs
-- Media handling
-
-### 🛠 Admin Dashboard
-- User management
-- Data inspection
-- Sync logs
-- Permissions
-
-### ☁️ Deployment
-- Docker / Kubernetes ready
-- Cloud or self-hosted
-- CI/CD templates included
-
----
-
-## 📱 Supported Clients (Planned)
-
-- React Native (first-class)
-- Flutter
-- Web (PWA)
-- Native iOS & Android
-
----
-
-
-## 🔧 React Native SDK: multi-team configuration
-
-The SDK client now supports dynamic configuration so different teams can map to their own API routes and identity model while keeping the default behavior unchanged.
+```bash
+npm install @opensync/sdk-react-native
+# or
+pnpm add @opensync/sdk-react-native
+# or
+yarn add @opensync/sdk-react-native
+```
 
 ```ts
 import { OpenSyncClient } from '@opensync/sdk-react-native';
 
 const client = new OpenSyncClient({
-  baseUrl: 'https://api.example.com',
-  endpoints: {
-    register: '/v1/auth/signup',
-    login: '/v1/auth/signin',
-    push: '/v1/sync/upload',
-    pull: '/v1/sync/download'
-  },
-  getUserId: () => currentWorkspaceUserId
-});
-```
-
-If you pass just a URL string (`new OpenSyncClient('https://api.example.com')`), the previous default routes and `userId: 'me'` behavior are still used.
-
----
-
-## 🚀 Getting Started (Early Preview)
-
-```bash
-git clone https://github.com/your-org/opensync
-cd opensync
-docker-compose up
-```
-
-```bash
-import { OpenSyncClient } from '@opensync/sdk';
-
-const client = new OpenSyncClient({
-  url: 'http://localhost:8080',
-  apiKey: 'dev-key'
+  baseUrl: 'http://localhost:8080/api'
 });
 
-await client.auth.signIn('user@email.com', 'password');
-const todos = await client.collection('todos').sync();
-
+await client.register('user@example.com', 'password123');
+await client.push([{ collection: 'todos', data: { id: 1, text: 'Ship it' } }]);
+const updates = await client.pull(0);
 ```
+
+## Package publishing
+
+### npm (React Native SDK)
+
+```bash
+npm run build
+cd packages/sdk-react-native
+npm publish --access public
+```
+
+### NuGet (.NET mobile SDK)
+
+```bash
+dotnet pack packages/sdk-dotnet/OpenSync.Client/OpenSync.Client.csproj -c Release
+# publish with:
+# dotnet nuget push <nupkg> --api-key <key> --source https://api.nuget.org/v3/index.json
+```
+
+## Security and API contract
+
+- Sync routes require JWT bearer auth.
+- `userId` is derived from token claims on the server.
+- Request payloads are validated with Nest `ValidationPipe` and DTO validators.
+
+## Roadmap
+
+- Kotlin Android SDK
+- Swift iOS SDK
+- Shared contract/OpenAPI for generated client SDKs
+- Stable `0.1.0` package release after alpha feedback
