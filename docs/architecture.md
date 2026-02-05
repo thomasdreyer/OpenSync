@@ -1,77 +1,31 @@
-
----
-
-# ✅ 3. ARCHITECTURE OVERVIEW (docs/architecture.md)
-
-```markdown
 # OpenSync Architecture
 
-OpenSync follows a **local-first, server-authoritative sync model** optimized for mobile environments with unreliable connectivity.
+OpenSync follows a local-first, server-authoritative sync model for mobile apps.
 
-## High-Level Components
+## Core components
 
-Mobile Client → Local DB → Sync Engine → API Gateway → Data Store → Realtime Engine → Other Clients
+- **Mobile SDKs**: React Native (current), .NET mobile (seed), native Android/iOS (roadmap)
+- **API**: NestJS auth + sync endpoints
+- **Database**: PostgreSQL via TypeORM
+- **Sync model**: push local deltas, pull remote changes since version
 
-### Client Side
-- SQLite / Realm local store
-- Change queue
-- Conflict resolver
-- Background sync worker
+## Sync flow
 
-### Server Side
-- Auth service
-- Sync API
-- Conflict resolution layer
-- Event bus
-- Storage service
+1. Client writes to local storage.
+2. Client pushes pending deltas.
+3. Server stores normalized change records.
+4. Client pulls changes newer than `since` version.
+5. Client reconciles in local store.
 
-### Realtime
-- WebSocket / SSE pub-sub
-- Channel-based subscriptions
-- Event replay
+## Security model
 
----
+- JWT bearer authentication
+- Sync endpoints protected with auth guard
+- Server derives `userId` from JWT claims
+- DTO-based validation for auth/sync payloads
 
-## Sync Model
+## Packaging architecture
 
-1. Client writes to local DB immediately
-2. Changes queued locally
-3. Background sync pushes deltas
-4. Server validates & merges
-5. Server broadcasts updates
-6. Clients reconcile
-
----
-
-## Conflict Resolution
-
-- Last-write-wins
-- Field-level merge
-- Custom merge strategies (pluggable)
-
----
-
-## Data Integrity
-
-- Version vectors
-- Schema migrations
-- Deterministic replay
-- Server-side validation
-
----
-
-## Security
-
-- JWT auth
-- Role-based permissions
-- Row-level policies
-- Encrypted transport
-
----
-
-## Scalability
-
-- Horizontal stateless APIs
-- Event-driven sync engine
-- Partitioned datasets
-- Offline-first edge-friendly design
+- npm package: `@opensync/sdk-react-native`
+- NuGet package: `OpenSync.Client`
+- Future: generated clients from shared OpenAPI contract
