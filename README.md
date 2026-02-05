@@ -16,7 +16,7 @@ OpenSync is an open-source, offline-first backend stack for mobile apps. It incl
 ## Quick start (local development)
 
 ```bash
-git clone https://github.com/your-org/opensync
+git clone https://github.com/thomasdreyer/opensync
 cd opensync
 npm install
 docker compose -f infra/docker/docker-compose.yml up -d db
