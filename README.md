@@ -71,6 +71,30 @@ OpenSync solves this by providing:
 
 ---
 
+
+## 🔧 React Native SDK: multi-team configuration
+
+The SDK client now supports dynamic configuration so different teams can map to their own API routes and identity model while keeping the default behavior unchanged.
+
+```ts
+import { OpenSyncClient } from '@opensync/sdk-react-native';
+
+const client = new OpenSyncClient({
+  baseUrl: 'https://api.example.com',
+  endpoints: {
+    register: '/v1/auth/signup',
+    login: '/v1/auth/signin',
+    push: '/v1/sync/upload',
+    pull: '/v1/sync/download'
+  },
+  getUserId: () => currentWorkspaceUserId
+});
+```
+
+If you pass just a URL string (`new OpenSyncClient('https://api.example.com')`), the previous default routes and `userId: 'me'` behavior are still used.
+
+---
+
 ## 🚀 Getting Started (Early Preview)
 
 ```bash
